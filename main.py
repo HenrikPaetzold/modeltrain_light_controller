@@ -1,8 +1,11 @@
 from machine import Pin, I2C
 from time import sleep
-from i2c_lcd import I2cLcd
+from pico_i2c_lcd import I2cLcd
 import os
-import urllib.request
+
+# Initialize LCD display
+i2c = I2C(0, scl=Pin(1), sda=Pin(0))
+lcd = I2cLcd(i2c, 0x3F, 2, 16)
 
 # define pins for buttons
 up_button = Pin(2, Pin.IN, Pin.PULL_DOWN)
@@ -21,23 +24,18 @@ def all_buttons():
 url = 'https://raw.githubusercontent.com/your-username/your-repo/master/main.py'
 
 # define pins for relay control signals
-relay_pins = [Pin(i, Pin.OUT) for i in range(5, 13)]
+relay_pins = [Pin(i, Pin.OUT) for i in range(5, 8)]
 
 # define pin for bell control signal
 bell_pin = Pin(13, Pin.OUT)
 
 # define menu items
 menu_items = [
-    {"type": "all_lights", "label": "All Lights"},
-    {"type": "light", "label": "Light Group 1"},
-    {"type": "light", "label": "Light Group 2"},
-    {"type": "light", "label": "Light Group 3"},
-    {"type": "light", "label": "Light Group 4"},
-    {"type": "light", "label": "Light Group 5"},
-    {"type": "light", "label": "Light Group 6"},
-    {"type": "light", "label": "Light Group 7"},
-    {"type": "light", "label": "Light Group 8"},
-    {"type": "menu", "label": "More Options"}
+    {"type": "all_lights", "label": "Alle Lichter"},
+    {"type": "light", "label": "Warthausen"},
+    {"type": "light", "label": "Niedlingen"},
+    {"type": "light", "label": "Licht Gruppe 3"},
+    {"type": "menu", "label": "Kirchturm"}
 ]
 menu_states = [False] * len(menu_items) # all items initially off
 current_item = 0 # initially select first item
@@ -57,11 +55,6 @@ submenu_items = [
 current_submenu_item = 0 # initially select first subitem
 in_submenu = False # initially not in submenu
 
-
-# Initialize LCD display
-i2c = I2C(0, scl=Pin(22), sda=Pin(21))
-lcd = I2cLcd(i2c, 0x27, 2, 16)
-
 def ring_bell(hour):
     # Send impulses to ring bell at specified hour
     for i in range(hour):
@@ -80,11 +73,11 @@ def update_menu():
     else:
         # Display current menu state
         state_str = ""
-        if menu_items[current_item]["type"] == "<IPAddress>_lights":
-            state_str = "- ON" if all(menu_states[1:9]) else "- OFF"
-        elif menu_items[current_item]["type"] == "<IPAddress>":
-            state_str = "- ON" if menu_states[current_item] else "- OFF"
-        lcd.putstr("{} {}".format(menu_items[current_item]["label"], state_str))
+        if menu_items[current_item]["type"] == "all_lights":
+            state_str = "AN" if all(menu_states[1:9]) else "AUS"
+        elif menu_items[current_item]["type"] == "lights":
+            state_str = "AN" if menu_states[current_item] else "AUS"
+        lcd.putstr(f"{menu_items[current_item]["label"]}-{state_str}")
 
 def up_pressed():
     global current_item
@@ -151,5 +144,5 @@ select_button.irq(trigger=Pin.IRQ_RISING, handler=lambda t:select_pressed())
 update_menu()
 while True:
    # Check buttons every 0.1 seconds
-   check_buttons()
+   # check_buttons()
    sleep(0.1)
