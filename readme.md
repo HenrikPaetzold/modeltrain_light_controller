@@ -20,7 +20,7 @@ Dieses Projekt ist meinem Großvater gewidmet, der eine große Leidenschaft für
 ## 💻 Software-Anforderungen 💻
 
 - Micropython-Firmware für Raspberry Pi Pico
-- `esp8266_i2c_lcd` Bibliothek zum Anschluss an das LCD-Display
+- `pico_i2c_lcd` Bibliothek zum Anschluss an das LCD-Display
 
 ## 🚀 Erste Schritte 🚀
 
@@ -66,7 +66,7 @@ This project is devoted to my grandfather, who has a passion for model trains. I
 ## 💻 Software Requirements 💻
 
 - Micropython firmware for Raspberry Pi Pico
-- `esp8266_i2c_lcd` library for interfacing with the LCD display
+- `pico_i2c_lcd` library for interfacing with the LCD display
 
 ## 🚀 Getting Started 🚀
 
