@@ -1,11 +1,17 @@
 from machine import Pin, I2C
-from esp8266_i2c_lcd import I2cLcd
-import utime
+from time import sleep
+from i2c_lcd import I2cLcd
+import os
+import urllib.request
 
 # define pins for buttons
 up_button = Pin(2, Pin.IN, Pin.PULL_DOWN)
 down_button = Pin(3, Pin.IN, Pin.PULL_DOWN)
 select_button = Pin(4, Pin.IN, Pin.PULL_DOWN)
+
+
+# Set the URL to the new main.py file in your GitHub repository
+url = 'https://raw.githubusercontent.com/your-username/your-repo/master/main.py'
 
 # define pins for relay control signals
 relay_pins = [Pin(i, Pin.OUT) for i in range(5, 13)]
@@ -44,27 +50,28 @@ submenu_items = [
 current_submenu_item = 0 # initially select first subitem
 in_submenu = False # initially not in submenu
 
-# initialize LCD display
+
+# Initialize LCD display
 i2c = I2C(0, scl=Pin(22), sda=Pin(21))
 lcd = I2cLcd(i2c, 0x27, 2, 16)
 
 def ring_bell(hour):
-    # send impulses to ring bell at specified hour
+    # Send impulses to ring bell at specified hour
     for i in range(hour):
         bell_pin.value(1)
-        utime.sleep(0.5)
+        sleep(0.5)
         bell_pin.value(0)
-        utime.sleep(0.5)
+        sleep(0.5)
 
 def update_menu():
-    # clear display
+    # Clear display
     lcd.clear()
     
     if in_submenu:
-        # display current submenu state
+        # Display current submenu state
         lcd.putstr(submenu_items[current_submenu_item]["label"])
     else:
-        # display current menu state
+        # Display current menu state
         state_str = ""
         if menu_items[current_item]["type"] == "<IPAddress>_lights":
             state_str = "- ON" if all(menu_states[1:9]) else "- OFF"
@@ -99,18 +106,38 @@ def select_pressed():
         relay_pins[current_item-1].value(menu_states[current_item])
         update_menu()
 
-# turn off all relays on startup
+def update_main():
+    # Download the new main.py file
+    urllib.request.urlretrieve(url, '/tmp/new_main.py')
+
+    # Check if the new main.py file is different from the current one
+    with open('/tmp/new_main.py', 'r') as new_file, open('/path/to/main.py', 'r') as current_file:
+        if new_file.read() != current_file.read():
+            # Replace the old main.py file with the new one
+            os.replace('/tmp/new_main.py', '/path/to/main.py')
+
+def check_buttons():
+    # Check if all buttons are pressed
+    if up_button.value() and down_button.value() and select_button.value():
+        # Display countdown on LCD
+        for i in range(10, 0, -1):
+            lcd.clear()
+            lcd.putstr("Updating in {}...".format(i))
+            sleep(1)
+        
+        # Update main.py file
+        update_main()
+
+# Turn off all relays on startup
 for pin in relay_pins:
     pin.value(0)
 
-# attach interrupt handlers to button pins
 up_button.irq(trigger=Pin.IRQ_RISING, handler=lambda t:up_pressed())
 down_button.irq(trigger=Pin.IRQ_RISING, handler=lambda t:down_pressed())
 select_button.irq(trigger=Pin.IRQ_RISING, handler=lambda t:select_pressed())
 
-# initial display of menu
 update_menu()
-
 while True:
-    # sleep to prevent high CPU usage
-    utime.sleep(0.1)
+   # Check buttons every 0.1 seconds
+   check_buttons()
+   sleep(0.1)
