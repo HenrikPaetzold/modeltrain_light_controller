@@ -9,6 +9,13 @@ up_button = Pin(2, Pin.IN, Pin.PULL_DOWN)
 down_button = Pin(3, Pin.IN, Pin.PULL_DOWN)
 select_button = Pin(4, Pin.IN, Pin.PULL_DOWN)
 
+all_buttons = [up_button, down_button, select_button]
+
+def all_buttons():
+    temp = 1
+    for button in all_buttons:
+        temp = temp and button.value()
+    return temp
 
 # Set the URL to the new main.py file in your GitHub repository
 url = 'https://raw.githubusercontent.com/your-username/your-repo/master/main.py'
@@ -37,15 +44,15 @@ current_item = 0 # initially select first item
 
 # define submenu for church bell
 submenu_items = [
-    {"type": "bell", "label": "10 AM"},
-    {"type": "bell", "label": "11 AM"},
-    {"type": "bell", "label": "12 PM"},
-    {"type": "bell", "label": "1 PM"},
-    {"type": "bell", "label": "2 PM"},
-    {"type": "bell", "label": "3 PM"},
-    {"type": "bell", "label": "4 PM"},
-    {"type": "bell", "label": "5 PM"},
-    {"type": "bell", "label": "<IPAddress>-8 PM"}
+    {"type": "bell", "label": "10:00 Uhr"},
+    {"type": "bell", "label": "11:00 Uhr"},
+    {"type": "bell", "label": "12:00 Uhr"},
+    {"type": "bell", "label": "13:00 Uhr"},
+    {"type": "bell", "label": "14:00 Uhr"},
+    {"type": "bell", "label": "15:00 Uhr"},
+    {"type": "bell", "label": "16:00 Uhr"},
+    {"type": "bell", "label": "17:00 Uhr"},
+    {"type": "bell", "label": "20:00 Uhr"}
 ]
 current_submenu_item = 0 # initially select first subitem
 in_submenu = False # initially not in submenu
@@ -107,6 +114,7 @@ def select_pressed():
         update_menu()
 
 def update_main():
+    pass
     # Download the new main.py file
     urllib.request.urlretrieve(url, '/tmp/new_main.py')
 
@@ -117,10 +125,14 @@ def update_main():
             os.replace('/tmp/new_main.py', '/path/to/main.py')
 
 def check_buttons():
+    pass
     # Check if all buttons are pressed
-    if up_button.value() and down_button.value() and select_button.value():
+    if all_buttons():
         # Display countdown on LCD
         for i in range(10, 0, -1):
+            if(not all_buttons()):
+                lcd.putstr("Update abgebrochen...")
+                return
             lcd.clear()
             lcd.putstr("Updating in {}...".format(i))
             sleep(1)
